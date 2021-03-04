@@ -1,6 +1,12 @@
 package com.scpfoundation.psybotic.disastercheckservice.Models;
 
 
+import com.scpfoundation.psybotic.disastercheckservice.Disaster_Service.DisasterService;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import javax.servlet.http.HttpServletResponse;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Objects;
@@ -83,6 +89,39 @@ public class Disaster{
         return Objects.hash(id, getType(), getLocation(), getDate());
     }
 
+    @PostMapping(
+            value = "/insert", consumes = "application/json", produces = "application/json")
+    public Disaster createDisaster(@RequestBody Disaster ds) {
+        return new DisasterService() {
+            @Override
+            public Disaster saveDisaster(Disaster ds) {
+                return null;
+            }
+
+            @Override
+            public Disaster findDisasterId(String id) {
+                return null;
+            }
+        }.saveDisaster(ds);
+    }
+    @PostMapping(
+            value = "/findById", consumes = "application/json", produces = "application/json")
+    public Disaster updatePerson(@RequestBody Disaster ds1, HttpServletResponse response) {
+        response.setHeader("Location", ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path("/findPerson/" + ds1.getId()).toUriString());
+
+        return new DisasterService() {
+            @Override
+            public Disaster saveDisaster(Disaster ds) {
+                return null;
+            }
+
+            @Override
+            public Disaster findDisasterId(String id) {
+                return null;
+            }
+        }.findDisasterId(id);
+    }
 
 
 }
