@@ -16,8 +16,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.scpfoundation.psybotic.disastercheckservice.FCM.Models.PushNotificationRequest;
 
+
+@Service
 public class FCMService {
     private Logger logger = LoggerFactory.getLogger(FCMService.class);
+
     public void sendMessage(Map<String, String> data, PushNotificationRequest request)
             throws InterruptedException, ExecutionException {
         Message message = getPreconfiguredMessageWithData(data, request);

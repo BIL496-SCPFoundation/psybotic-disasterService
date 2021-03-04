@@ -18,6 +18,7 @@ public class Tweet {
     private List<String> hashtags;
     private List<String> mentions;
     private Date creating;
+    private String id;
 
 
 
@@ -26,6 +27,7 @@ public class Tweet {
         this.text = status.getText();
         this.user = status.getUser().getScreenName();
         this.language = status.getUser().getLang();
+        this.id=""+status.getId();
         this.hashtags = new ArrayList();
         this.creating=status.getCreatedAt();
         for (HashtagEntity h : status.getHashtagEntities()) {
@@ -69,6 +71,22 @@ public class Tweet {
         this.language = language;
     }
 
+
+    public Timestamp getTime() {
+        return time;
+    }
+
+    public void setTime(Timestamp time) {
+        this.time = time;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
 
     public List<String> getHashtags() {
