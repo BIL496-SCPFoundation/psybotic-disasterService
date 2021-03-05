@@ -25,24 +25,38 @@ public class Trying {
         ArrayList<Disaster> nereden = new ArrayList<>();
         nereden=twc.getUserTimeLine("DepremDairesi");
         RestTemplate rest = new RestTemplate();
-        String url = "https://limitless-lake-96203.herokuapp.com/disasters/insert";
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        Disaster d = new Disaster();
-        JSONObject disasterJsonObject = new JSONObject();
-        disasterJsonObject.put("id", "deneme");
-        HttpEntity<String> request =
-                new HttpEntity<String>(disasterJsonObject.toString(), headers);
-        String personResultAsJsonStr =
-                rest.postForObject(url, request, String.class);
-        JsonNode root = objectMapper.readTree(personResultAsJsonStr);
-        System.out.println(root);
-        //GeneralResponse gr = rest.postForObject(url, request, GeneralResponse.class);
+        String pushingurl = "https://limitless-lake-96203.herokuapp.com/disasters/insert";
+        String findingById = "https://limitless-lake-96203.herokuapp.com/disasters/findById?id=";
+        for (int i=0;i<nereden.size();i++)
+        {
+            String id=nereden.get(i).getId();
+            findingById=findingById+id;
+            Disaster ds2 = rest.getForObject(findingById,Disaster.class);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            if(ds2==null)
+            {
+                Disaster d = new Disaster();
+                JSONObject disasterJsonObject = new JSONObject();
+                disasterJsonObject.put("id", nereden.get(i).getId());
+                disasterJsonObject.put("type",nereden.get(i).getType());
+                disasterJsonObject.put("location",nereden.get(i).getLocation());
+                disasterJsonObject.put("date",nereden.get(i).getDate().toString());
+                disasterJsonObject.put("latitude",nereden.get(i).getLatitude());
+                disasterJsonObject.put("longitude",nereden.get(i).getLongitude());
+                HttpEntity<String> request =
+                        new HttpEntity<String>(disasterJsonObject.toString(), headers);
+                String personResultAsJsonStr =
+                        rest.postForObject(pushingurl, request, String.class);
+                JsonNode root = objectMapper.readTree(personResultAsJsonStr);
+                System.out.println("Yeni bir felaket eklendi");
+            }
+            else
+            {
+                System.out.println("Burda OLmasi Beklemir");
+                break;
+            }
 
-        String url2 = "https://limitless-lake-96203.herokuapp.com/disasters/findById?id=";
-        Integer empId= 3;
-        url2=url2+empId;
-        RestTemplate restTemplate = new RestTemplate();
-        Disaster ds2 = restTemplate.getForObject(url2,Disaster.class);
+        }
     }
 }

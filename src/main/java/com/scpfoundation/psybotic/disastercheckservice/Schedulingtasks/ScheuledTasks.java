@@ -27,50 +27,53 @@ public class ScheuledTasks {
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
     @Scheduled(fixedRate = 3600000)
-    public void reportCurrentTime() {
+    public void reportCurrentTime() throws TwitterException, JsonProcessingException {
         log.info("The time is now {}", dateFormat.format(new Date()));
+        islemleribaslat();
     }
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    public static void islemleribaslat() throws TwitterException, JsonProcessingException {
+    public void islemleribaslat() throws TwitterException, JsonProcessingException {
         TwitterAPIController twc=new TwitterAPIController();
         ArrayList<Disaster> nereden = new ArrayList<>();
         nereden=twc.getUserTimeLine("DepremDairesi");
         RestTemplate rest = new RestTemplate();
         String pushingurl = "https://limitless-lake-96203.herokuapp.com/disasters/insert";
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
         String findingById = "https://limitless-lake-96203.herokuapp.com/disasters/findById?id=";
         for (int i=0;i<nereden.size();i++)
         {
             String id=nereden.get(i).getId();
             findingById=findingById+id;
             Disaster ds2 = rest.getForObject(findingById,Disaster.class);
-            if(ds2!=null)
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            if(ds2==null)
             {
                 Disaster d = new Disaster();
                 JSONObject disasterJsonObject = new JSONObject();
-                disasterJsonObject.put("id", id);
-                disasterJsonObject.put("type",ds2.getType());
-                disasterJsonObject.put("location",ds2.getLocation());
-                disasterJsonObject.put("date",ds2.getDate());
-                disasterJsonObject.put("latitude",ds2.getLatitude());
-                disasterJsonObject.put("longitude",ds2.getLongitude());
+                disasterJsonObject.put("id", nereden.get(i).getId());
+                disasterJsonObject.put("type",nereden.get(i).getType());
+                disasterJsonObject.put("location",nereden.get(i).getLocation());
+                disasterJsonObject.put("date",nereden.get(i).getDate().toString());
+                disasterJsonObject.put("latitude",nereden.get(i).getLatitude());
+                disasterJsonObject.put("longitude",nereden.get(i).getLongitude());
                 HttpEntity<String> request =
                         new HttpEntity<String>(disasterJsonObject.toString(), headers);
                 String personResultAsJsonStr =
                         rest.postForObject(pushingurl, request, String.class);
                 JsonNode root = objectMapper.readTree(personResultAsJsonStr);
-                System.out.println("Yeni bir felaket eklendi"+ds2.toString());
+                System.out.println("Yeni bir felaket eklendi");
             }
             else
             {
+                System.out.println("Sistem Guncel");
                 break;
             }
+
+        }
 
         }
 
 
 
     }
-}

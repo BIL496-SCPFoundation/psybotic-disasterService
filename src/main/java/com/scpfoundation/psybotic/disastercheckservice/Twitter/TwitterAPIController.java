@@ -100,7 +100,6 @@ public class TwitterAPIController {
                         Double boylam_cinsi=Double.parseDouble(istenen_boylam[2]);
                         ds1.setLongitude(boylam_cinsi);
                         disaster.add(ds1);
-                        System.out.println(ds1.toString());
                     }
                 }
             }
