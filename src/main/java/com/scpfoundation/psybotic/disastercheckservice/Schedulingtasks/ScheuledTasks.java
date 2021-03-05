@@ -1,12 +1,24 @@
 package com.scpfoundation.psybotic.disastercheckservice.Schedulingtasks;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.scpfoundation.psybotic.disastercheckservice.Models.Disaster;
+import com.scpfoundation.psybotic.disastercheckservice.Twitter.TwitterAPIController;
+import net.minidev.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+import twitter4j.TwitterException;
 
 @Component
 public class ScheuledTasks {
@@ -17,6 +29,47 @@ public class ScheuledTasks {
     @Scheduled(fixedRate = 3600000)
     public void reportCurrentTime() {
         log.info("The time is now {}", dateFormat.format(new Date()));
+    }
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    public static void islemleribaslat() throws TwitterException, JsonProcessingException {
+        TwitterAPIController twc=new TwitterAPIController();
+        ArrayList<Disaster> nereden = new ArrayList<>();
+        nereden=twc.getUserTimeLine("DepremDairesi");
+        RestTemplate rest = new RestTemplate();
+        String pushingurl = "https://limitless-lake-96203.herokuapp.com/disasters/insert";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        String findingById = "https://limitless-lake-96203.herokuapp.com/disasters/findById?id=";
+        for (int i=0;i<nereden.size();i++)
+        {
+            String id=nereden.get(i).getId();
+            findingById=findingById+id;
+            Disaster ds2 = rest.getForObject(findingById,Disaster.class);
+            if(ds2!=null)
+            {
+                Disaster d = new Disaster();
+                JSONObject disasterJsonObject = new JSONObject();
+                disasterJsonObject.put("id", id);
+                disasterJsonObject.put("type",ds2.getType());
+                disasterJsonObject.put("location",ds2.getLocation());
+                disasterJsonObject.put("date",ds2.getDate());
+                disasterJsonObject.put("latitude",ds2.getLatitude());
+                disasterJsonObject.put("longitude",ds2.getLongitude());
+                HttpEntity<String> request =
+                        new HttpEntity<String>(disasterJsonObject.toString(), headers);
+                String personResultAsJsonStr =
+                        rest.postForObject(pushingurl, request, String.class);
+                JsonNode root = objectMapper.readTree(personResultAsJsonStr);
+                System.out.println("Yeni bir felaket eklendi"+ds2.toString());
+            }
+            else
+            {
+                break;
+            }
+
+        }
+
 
 
     }

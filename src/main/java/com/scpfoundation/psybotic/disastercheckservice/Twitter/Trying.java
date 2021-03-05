@@ -13,6 +13,7 @@ import org.springframework.web.client.RestTemplate;
 import twitter4j.Status;
 import twitter4j.TwitterException;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +39,10 @@ public class Trying {
         System.out.println(root);
         //GeneralResponse gr = rest.postForObject(url, request, GeneralResponse.class);
 
-
-
+        String url2 = "https://limitless-lake-96203.herokuapp.com/disasters/findById?id=";
+        Integer empId= 3;
+        url2=url2+empId;
+        RestTemplate restTemplate = new RestTemplate();
+        Disaster ds2 = restTemplate.getForObject(url2,Disaster.class);
     }
 }
