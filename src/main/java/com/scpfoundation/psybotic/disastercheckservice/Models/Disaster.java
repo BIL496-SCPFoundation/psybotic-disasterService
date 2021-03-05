@@ -15,12 +15,29 @@ public class Disaster{
     private String id;
     private String type;
     private String location;
-    private Timestamp date;
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
+    private Date date;
     private double latitude;
     private double longitude;
 
 
-    public void setLongitude(int longitude) {
+    public void setLongitude(Double longitude) {
         this.longitude = longitude;
     }
 
@@ -29,7 +46,7 @@ public class Disaster{
         return latitude;
     }
 
-    public void setLatitude(int latitude) {
+    public void setLatitude(Double latitude) {
         this.latitude = latitude;
     }
 
@@ -63,13 +80,6 @@ public class Disaster{
         this.location = location;
     }
 
-    public Date getDate() {
-        return date;
-    }
-
-    public void setDate(Timestamp date) {
-        this.date = date;
-    }
 
     @Override
     public boolean equals(Object o) {
@@ -104,24 +114,16 @@ public class Disaster{
             }
         }.saveDisaster(ds);
     }
-    @PostMapping(
-            value = "/findById", consumes = "application/json", produces = "application/json")
-    public Disaster updatePerson(@RequestBody Disaster ds1, HttpServletResponse response) {
-        response.setHeader("Location", ServletUriComponentsBuilder.fromCurrentContextPath()
-                .path("/findPerson/" + ds1.getId()).toUriString());
 
-        return new DisasterService() {
-            @Override
-            public Disaster saveDisaster(Disaster ds) {
-                return null;
-            }
-
-            @Override
-            public Disaster findDisasterId(String id) {
-                return null;
-            }
-        }.findDisasterId(id);
+    @Override
+    public String toString() {
+        return "Disaster{" +
+                "id='" + id + '\'' +
+                ", type='" + type + '\'' +
+                ", location='" + location + '\'' +
+                ", date=" + date +
+                ", latitude=" + latitude +
+                ", longitude=" + longitude +
+                '}';
     }
-
-
 }

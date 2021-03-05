@@ -1,7 +1,6 @@
 package com.scpfoundation.psybotic.disastercheckservice.Twitter;
 
 
-import com.sun.tools.javac.util.Pair;
 import twitter4j.HashtagEntity;
 import twitter4j.Status;
 import twitter4j.UserMentionEntity;
@@ -14,14 +13,23 @@ public class Tweet {
     private String text;
     private String user;
     private String language;
-    private Timestamp time;
+    private Date time;
     private List<String> hashtags;
     private List<String> mentions;
-    private Date creating;
     private String id;
 
 
+    public String getText() {
+        return text;
+    }
 
+    public Date getTime() {
+        return time;
+    }
+
+    public void setTime(Date time) {
+        this.time = time;
+    }
 
     public Tweet(Status status) {
         this.text = status.getText();
@@ -29,7 +37,7 @@ public class Tweet {
         this.language = status.getUser().getLang();
         this.id=""+status.getId();
         this.hashtags = new ArrayList();
-        this.creating=status.getCreatedAt();
+        this.time=status.getCreatedAt();
         for (HashtagEntity h : status.getHashtagEntities()) {
             this.hashtags.add(h.getText());
         }
@@ -40,16 +48,7 @@ public class Tweet {
 
     }
 
-    public Date getCreating() {
-        return creating;
-    }
 
-    public void setCreating(Date creating) {
-        this.creating = creating;
-    }
-    public String getText() {
-        return text;
-    }
 
     public void setText(String text) {
         this.text = text.intern();
@@ -71,10 +70,6 @@ public class Tweet {
         this.language = language;
     }
 
-
-    public Timestamp getTime() {
-        return time;
-    }
 
     public void setTime(Timestamp time) {
         this.time = time;

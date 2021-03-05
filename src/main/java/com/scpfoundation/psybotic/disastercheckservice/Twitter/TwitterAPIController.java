@@ -1,5 +1,6 @@
 package com.scpfoundation.psybotic.disastercheckservice.Twitter;
 
+import com.scpfoundation.psybotic.disastercheckservice.Models.Disaster;
 import twitter4j.*;
 import twitter4j.conf.ConfigurationBuilder;
 import java.util.*;
@@ -8,6 +9,9 @@ public class TwitterAPIController {
     private List<Tweet> listTweets;
     private int count = 0;
     private ConfigurationBuilder cb;
+
+    public static ArrayList<Disaster> disaster=new ArrayList<>();
+
 
     public TwitterAPIController() {
         cb = new ConfigurationBuilder();
@@ -63,7 +67,7 @@ public class TwitterAPIController {
         }
         return listTweets;
     }
-    public List<Status> getUserTimeLine(String userName)
+    public ArrayList<Disaster> getUserTimeLine(String userName)
     {
         TwitterFactory tf = new TwitterFactory(cb.build());
         Twitter twitter = tf.getInstance();
@@ -79,16 +83,28 @@ public class TwitterAPIController {
                 List<String> hashTags = tw.getHashtags();
                 for (int a=0;a<hashTags.size();a++) {
                     if (hashTags.get(a).equals("Deprem")) {
-                        System.out.println(tw.getText());
-                        System.out.println(tw.getCreating());
-                        System.out.println();
-                        System.out.println();
-                        // Assuming all hashtags are unique...
-                        continue;
+                        Disaster ds1=new Disaster();
+                        ds1.setDate(tw.getTime());
+                        ds1.setId(tw.getId());
+                        ds1.setType("Deprem");
+                        String yer =tw.getText().substring(tw.getText().indexOf("Yer"),tw.getText().indexOf("Tarih-Saat"));
+                        String[] yerler=yer.split(" ");
+                        String istenen=yerler[3].substring(1)+"-"+yerler[2];
+                        ds1.setLocation(istenen);
+                        String enlem=tw.getText().substring(tw.getText().indexOf("Enlem"),tw.getText().indexOf("Boylam"));
+                        String[] istenen_enlem=enlem.split(" ");
+                        Double enlem_cinsi=Double.parseDouble(istenen_enlem[2]);
+                        ds1.setLatitude(enlem_cinsi);
+                        String boylam=tw.getText().substring(tw.getText().indexOf("Boylam"),tw.getText().indexOf("Derinlik"));
+                        String[] istenen_boylam=boylam.split(" ");
+                        Double boylam_cinsi=Double.parseDouble(istenen_boylam[2]);
+                        ds1.setLongitude(boylam_cinsi);
+                        disaster.add(ds1);
+                        System.out.println(ds1.toString());
                     }
                 }
             }
-            return statuses;
+            return disaster;
         }
         catch (TwitterException te) {
             te.printStackTrace();
