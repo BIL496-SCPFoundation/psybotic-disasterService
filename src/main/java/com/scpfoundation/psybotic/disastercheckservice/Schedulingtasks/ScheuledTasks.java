@@ -9,6 +9,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.scpfoundation.psybotic.disastercheckservice.Models.Disaster;
 import com.scpfoundation.psybotic.disastercheckservice.Twitter.TwitterAPIController;
+import com.scpfoundation.psybotic.disastercheckservice.fcm.PushNotificationController;
+import com.scpfoundation.psybotic.disastercheckservice.fcm.model.PushNotificationRequest;
+import com.scpfoundation.psybotic.disastercheckservice.fcm.service.PushNotificationService;
 import net.minidev.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +45,7 @@ public class ScheuledTasks {
         String findingById = "https://limitless-lake-96203.herokuapp.com/disasters/findById?id=";
         for (int i=0;i<nereden.size();i++)
         {
+            PushNotificationController pushNotificationController;
             String id=nereden.get(i).getId();
             findingById=findingById+id;
             Disaster ds2 = rest.getForObject(findingById,Disaster.class);
@@ -63,6 +67,14 @@ public class ScheuledTasks {
                         rest.postForObject(pushingurl, request, String.class);
                 JsonNode root = objectMapper.readTree(personResultAsJsonStr);
                 System.out.println("Yeni bir felaket eklendi");
+                String token=nereden.get(i).toString();
+                PushNotificationRequest req=new PushNotificationRequest();
+                PushNotificationService s1 = null;
+                req.setTitle("GECMIS OLSUN");
+                req.setMessage("Yeni Bir Deprem Yasandi Iyi Misin?");
+                req.setToken(token);
+                s1.sendPushNotificationToToken(req);
+
             }
             else
             {
