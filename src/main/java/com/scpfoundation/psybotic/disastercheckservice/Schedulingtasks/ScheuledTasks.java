@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.scpfoundation.psybotic.disastercheckservice.Models.Disaster;
 import com.scpfoundation.psybotic.disastercheckservice.Twitter.TwitterAPIController;
+import com.scpfoundation.psybotic.disastercheckservice.fcm.FCMService;
 import com.scpfoundation.psybotic.disastercheckservice.fcm.PushNotificationController;
 import com.scpfoundation.psybotic.disastercheckservice.fcm.model.PushNotificationRequest;
 import com.scpfoundation.psybotic.disastercheckservice.fcm.service.PushNotificationService;
@@ -40,6 +41,7 @@ public class ScheuledTasks {
         TwitterAPIController twc=new TwitterAPIController();
         ArrayList<Disaster> nereden = new ArrayList<>();
         nereden=twc.getUserTimeLine("DepremDairesi");
+        //System.out.println(nereden);
         RestTemplate rest = new RestTemplate();
         String pushingurl = "https://limitless-lake-96203.herokuapp.com/disasters/insert";
         String findingById = "https://limitless-lake-96203.herokuapp.com/disasters/findById?id=";
@@ -49,16 +51,18 @@ public class ScheuledTasks {
             String id=nereden.get(i).getId();
             findingById=findingById+id;
             Disaster ds2 = rest.getForObject(findingById,Disaster.class);
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
+            //System.out.println(ds2.toString());
+
             if(ds2==null)
             {
                 Disaster d = new Disaster();
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
                 JSONObject disasterJsonObject = new JSONObject();
                 disasterJsonObject.put("id", nereden.get(i).getId());
                 disasterJsonObject.put("type",nereden.get(i).getType());
                 disasterJsonObject.put("location",nereden.get(i).getLocation());
-                disasterJsonObject.put("date",nereden.get(i).getDate().toString());
+                //disasterJsonObject.put("date",nereden.get(i).getDate().toString());
                 disasterJsonObject.put("latitude",nereden.get(i).getLatitude());
                 disasterJsonObject.put("longitude",nereden.get(i).getLongitude());
                 HttpEntity<String> request =
@@ -67,17 +71,24 @@ public class ScheuledTasks {
                         rest.postForObject(pushingurl, request, String.class);
                 JsonNode root = objectMapper.readTree(personResultAsJsonStr);
                 System.out.println("Yeni bir felaket eklendi");
-                String token=nereden.get(i).toString();
+                String token="cclK5owbSgOhaS021fUGzR:APA91bHANIxto1pPoKyFQIMtOxBFzwXfnUUSjioArd0j-WLQ8nWafZ_hF0s527QnE8Zb9wBRSSyoclPBi2Luv-PvIyQ3UTWp8zhbEustj83qvYScnyQ7dEPodp4K341up-ZnjdL0qH-J";
                 PushNotificationRequest req=new PushNotificationRequest();
-                PushNotificationService s1 = null;
-                req.setTitle("GECMIS OLSUN");
-                req.setMessage("Yeni Bir Deprem Yasandi Iyi Misin?");
+                PushNotificationService s1 = new PushNotificationService(new FCMService());
+                req.setTitle("DEPREM OLDU");
+                req.setMessage(disasterJsonObject.toString());
                 req.setToken(token);
                 s1.sendPushNotificationToToken(req);
 
             }
             else
             {
+                String token="cclK5owbSgOhaS021fUGzR:APA91bHANIxto1pPoKyFQIMtOxBFzwXfnUUSjioArd0j-WLQ8nWafZ_hF0s527QnE8Zb9wBRSSyoclPBi2Luv-PvIyQ3UTWp8zhbEustj83qvYScnyQ7dEPodp4K341up-ZnjdL0qH-J";
+                PushNotificationRequest req=new PushNotificationRequest();
+                PushNotificationService s1 = new PushNotificationService(new FCMService());
+                req.setTitle("Deprem Olmadi");
+                req.setMessage("Bu Bir Bilgilendirme Mesajidir");
+                req.setToken(token);
+                s1.sendPushNotificationToToken(req);
                 System.out.println("Sistem Guncel");
                 break;
             }
