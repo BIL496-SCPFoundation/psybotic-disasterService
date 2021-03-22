@@ -39,12 +39,13 @@ public class ScheuledTasks {
 
     public void islemleribaslat() throws TwitterException, JsonProcessingException {
         TwitterAPIController twc=new TwitterAPIController();
-        ArrayList<Disaster> nereden = new ArrayList<>();
+        ArrayList<Disaster> nereden;
         nereden=twc.getUserTimeLine("DepremDairesi");
         //System.out.println(nereden);
         RestTemplate rest = new RestTemplate();
         String pushingurl = "https://limitless-lake-96203.herokuapp.com/disasters/insert";
         String findingById = "https://limitless-lake-96203.herokuapp.com/disasters/findById?id=";
+        System.out.println(nereden.toString());
         for (int i=0;i<nereden.size();i++)
         {
             PushNotificationController pushNotificationController;
