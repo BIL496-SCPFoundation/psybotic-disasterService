@@ -104,13 +104,4 @@ public class Notification {
         return Objects.hash(getNotificationId(), getUserId(), getTextHeader(), getText(), isStatus(), isReply(), getSendingDate(), getReplyDate());
     }
 
-
-    @Override
-    public String getId() {
-        return notificationId;
-    }
-    @Override
-    public void setId(String id) {
-        this.notificationId = id;
-    }
 }
