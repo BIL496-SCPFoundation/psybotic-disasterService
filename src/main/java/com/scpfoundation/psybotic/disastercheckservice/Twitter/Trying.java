@@ -27,7 +27,6 @@ public class Trying {
     public static void main(String[] args) throws TwitterException, JsonProcessingException {
         TwitterAPIController twc=new TwitterAPIController();
         ArrayList<Disaster> nereden = new ArrayList<>();
-        ArrayList<User> users=new ArrayList<>();
         nereden=twc.getUserTimeLine("DepremDairesi");
         RestTemplate rest = new RestTemplate();
         String pushingurl = "https://limitless-lake-96203.herokuapp.com/disasters/insert";
@@ -42,6 +41,7 @@ public class Trying {
             headers.setContentType(MediaType.APPLICATION_JSON);
             if(ds2==null)
             {
+                ArrayList<User> users=new ArrayList<>();
                 JSONObject disasterJsonObject = new JSONObject();
                 disasterJsonObject.put("id", nereden.get(i).getId());
                 disasterJsonObject.put("type",nereden.get(i).getType());
