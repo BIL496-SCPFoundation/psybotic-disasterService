@@ -7,26 +7,27 @@ import com.scpfoundation.psybotic.disastercheckservice.Models.Disaster;
 
 import com.scpfoundation.psybotic.disastercheckservice.Models.Notification;
 import com.scpfoundation.psybotic.disastercheckservice.Models.User;
+import com.scpfoundation.psybotic.disastercheckservice.fcm.FCMService;
+import com.scpfoundation.psybotic.disastercheckservice.fcm.model.PushNotificationRequest;
+import com.scpfoundation.psybotic.disastercheckservice.fcm.service.PushNotificationService;
 import net.minidev.json.JSONObject;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.client.RestTemplate;
-import twitter4j.Status;
+
 import twitter4j.TwitterException;
 
-import java.net.URI;
-import java.text.SimpleDateFormat;
+
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 public class Trying {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public static void main(String[] args) throws TwitterException, JsonProcessingException {
         TwitterAPIController twc=new TwitterAPIController();
-        ArrayList<Disaster> nereden = new ArrayList<>();
+        ArrayList<Disaster> nereden;
         nereden=twc.getUserTimeLine("DepremDairesi");
         RestTemplate rest = new RestTemplate();
         String pushingurl = "https://limitless-lake-96203.herokuapp.com/disasters/insert";
@@ -63,6 +64,7 @@ public class Trying {
                 newNotification.setReply(false);
                 newNotification.setStatus(true);
                 newNotification.setTextHeader("Iyi Misin?");
+
                 for (int j = 0; j < users.size() ; j++) {
                         newNotification.setUserId(users.get(i).getId());
                         String text="Merhaba"+users.get(i).getFirstName()
@@ -84,7 +86,15 @@ public class Trying {
                     String notificationResultAsJsonStr =
                             rest.postForObject(pushingNotificationDb, request_notification, String.class);
                     JsonNode root_notificaiton = objectMapper.readTree(notificationResultAsJsonStr);
-
+                    String token=users.get(i).getDeviceToken();
+                    if(token!=null) {
+                        PushNotificationRequest req = new PushNotificationRequest();
+                        PushNotificationService s1 = new PushNotificationService(new FCMService());
+                        req.setTitle(newNotification.getTextHeader());
+                        req.setMessage(newNotification.getText());
+                        req.setToken(token);
+                        s1.sendPushNotificationToToken(req);
+                    }
                 }
             }
             else
