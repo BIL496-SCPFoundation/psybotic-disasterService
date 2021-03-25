@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.scpfoundation.psybotic.disastercheckservice.Models.Disaster;
 
+import com.scpfoundation.psybotic.disastercheckservice.Models.Notification;
+import com.scpfoundation.psybotic.disastercheckservice.Models.User;
 import net.minidev.json.JSONObject;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -14,7 +16,9 @@ import twitter4j.Status;
 import twitter4j.TwitterException;
 
 import java.net.URI;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class Trying {
@@ -23,11 +27,12 @@ public class Trying {
     public static void main(String[] args) throws TwitterException, JsonProcessingException {
         TwitterAPIController twc=new TwitterAPIController();
         ArrayList<Disaster> nereden = new ArrayList<>();
+        ArrayList<User> users=new ArrayList<>();
         nereden=twc.getUserTimeLine("DepremDairesi");
         RestTemplate rest = new RestTemplate();
         String pushingurl = "https://limitless-lake-96203.herokuapp.com/disasters/insert";
-        String pushingNotificationDb= "https://limitless-lake-96203.herokuapp.com//notifications/insert";
         String findingById = "https://limitless-lake-96203.herokuapp.com/disasters/findById?id=";
+        String pushingNotificationDb= "https://limitless-lake-96203.herokuapp.com//notifications/insert";
         for (int i=0;i<nereden.size();i++)
         {
             String id=nereden.get(i).getId();
@@ -51,6 +56,22 @@ public class Trying {
                         rest.postForObject(pushingurl, request, String.class);
                 JsonNode root = objectMapper.readTree(personResultAsJsonStr);
                 System.out.println("Yeni bir felaket eklendi");
+                Notification newNotification = new Notification();
+                Date date = new Date(System.currentTimeMillis());
+                newNotification.setNotificationId(nereden.get(i).getId());
+                newNotification.setSendingDate(date);
+                newNotification.setReply(false);
+                newNotification.setStatus(true);
+                newNotification.setTextHeader("Iyi Misin?");
+                for (int j = 0; j < users.size() ; j++) {
+                        newNotification.setUserId(users.get(i).getId());
+                        String text="Merhaba"+users.get(i).getFirstName()
+                                +"Seni Cok Merak Ettik"+"Yasadigin Bolgedeye yakin"
+                                +nereden.get(i).getLocation()+"'da"+nereden.get(i).getType()+"yasandi."
+                                +"Umarim sen sevdiklerin ve ailen iyidir."+
+                                "Lutfen beni bilgilendirir misin,Nasilsin?";
+                        newNotification.setText(text);
+                }
             }
             else
             {
