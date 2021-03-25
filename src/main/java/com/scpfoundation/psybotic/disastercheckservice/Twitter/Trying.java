@@ -26,6 +26,7 @@ public class Trying {
         nereden=twc.getUserTimeLine("DepremDairesi");
         RestTemplate rest = new RestTemplate();
         String pushingurl = "https://limitless-lake-96203.herokuapp.com/disasters/insert";
+        String pushingNotificationDb= "https://limitless-lake-96203.herokuapp.com//notifications/insert";
         String findingById = "https://limitless-lake-96203.herokuapp.com/disasters/findById?id=";
         for (int i=0;i<nereden.size();i++)
         {
