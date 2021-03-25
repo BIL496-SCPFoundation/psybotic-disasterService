@@ -32,6 +32,7 @@ public class Trying {
         String pushingurl = "https://limitless-lake-96203.herokuapp.com/disasters/insert";
         String findingById = "https://limitless-lake-96203.herokuapp.com/disasters/findById?id=";
         String pushingNotificationDb= "https://limitless-lake-96203.herokuapp.com//notifications/insert";
+        String gettingNearUser="";
         for (int i=0;i<nereden.size();i++)
         {
             String id=nereden.get(i).getId();
