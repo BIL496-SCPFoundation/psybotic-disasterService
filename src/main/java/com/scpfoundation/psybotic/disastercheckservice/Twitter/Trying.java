@@ -42,7 +42,6 @@ public class Trying {
             headers.setContentType(MediaType.APPLICATION_JSON);
             if(ds2==null)
             {
-                Disaster d = new Disaster();
                 JSONObject disasterJsonObject = new JSONObject();
                 disasterJsonObject.put("id", nereden.get(i).getId());
                 disasterJsonObject.put("type",nereden.get(i).getType());
@@ -71,6 +70,20 @@ public class Trying {
                                 +"Umarim sen sevdiklerin ve ailen iyidir."+
                                 "Lutfen beni bilgilendirir misin,Nasilsin?";
                         newNotification.setText(text);
+                    JSONObject notificationJsonObject = new JSONObject();
+                    notificationJsonObject.put("notificationId",newNotification.getNotificationId());
+                    notificationJsonObject.put("userId",newNotification.getUserId());
+                    notificationJsonObject.put("textHeader",newNotification.getTextHeader());
+                    notificationJsonObject.put("text",newNotification.getText());
+                    notificationJsonObject.put("status",newNotification.isStatus());
+                    notificationJsonObject.put("reply",newNotification.isReply());
+                    notificationJsonObject.put("sendingDate",newNotification.getSendingDate());
+                    HttpEntity<String> request_notification =
+                            new HttpEntity<String>(disasterJsonObject.toString(), headers);
+                    String notificationResultAsJsonStr =
+                            rest.postForObject(pushingNotificationDb, request_notification, String.class);
+                    JsonNode root_notificaiton = objectMapper.readTree(notificationResultAsJsonStr);
+
                 }
             }
             else
