@@ -33,6 +33,10 @@ public class Trying {
         String pushingNotificationDb= "https://limitless-lake-96203.herokuapp.com//notifications/insert";
         String findNearByuserurl="http://limitless-lake-96203.herokuapp.com/users/findByNearLocation?city=";
         System.out.println(twits_of_disaster.size());
+        for (int i = 0; i <twits_of_disaster.size() ; i++) {
+            System.out.println("---------"+twits_of_disaster.get(i).getLocation()+twits_of_disaster.get(i).getLocation());
+            System.out.println(twits_of_disaster.get(i).getLocation()+twits_of_disaster.get(i).getId());
+        }
         for (int i=0;i<twits_of_disaster.size();i++)
         {
             System.out.println("---------"+twits_of_disaster.get(i).getLocation()+twits_of_disaster.get(i).getLocation());
@@ -48,7 +52,7 @@ public class Trying {
                     disasterJsonObject.put("id", twits_of_disaster.get(i).getId());
                     disasterJsonObject.put("type",twits_of_disaster.get(i).getType());
                     disasterJsonObject.put("location",twits_of_disaster.get(i).getLocation());
-                    disasterJsonObject.put("date",twits_of_disaster.get(i).getDate().toString());
+                    //disasterJsonObject.put("date",twits_of_disaster.get(i).getDate());
                     disasterJsonObject.put("latitude",twits_of_disaster.get(i).getLatitude());
                     disasterJsonObject.put("longitude",twits_of_disaster.get(i).getLongitude());
                     HttpEntity<String> request =
@@ -65,9 +69,11 @@ public class Trying {
                     newNotification.setStatus(true);
                     newNotification.setTextHeader("Iyi Misin?");
                     String city="\""+twits_of_disaster.get(i).getLocation()+"\""+"&";
-                    String latitude="latitide="+twits_of_disaster.get(i).getLatitude()+"&";
+                    String latitude="latitude="+twits_of_disaster.get(i).getLatitude()+"&";
                     String longitude="longitude="+twits_of_disaster.get(i).getLatitude();
                     String findingnearbyuserurl=findNearByuserurl+city+latitude+longitude;
+                    System.out.println(findingnearbyuserurl);
+                    System.out.println("Olusturtuldum");
                     ResponseEntity<Object[]> responseEntity = rest.getForEntity(findingnearbyuserurl, Object[].class);
                     Object[] objects = responseEntity.getBody();
                     MediaType contentType = responseEntity.getHeaders().getContentType();
@@ -108,6 +114,7 @@ public class Trying {
                 }
             else
                 {
+
                     System.out.println("Burda OLmasi Beklemir");
                     break;
                 }

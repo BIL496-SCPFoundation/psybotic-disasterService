@@ -8,6 +8,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.scpfoundation.psybotic.disastercheckservice.Models.Disaster;
+import com.scpfoundation.psybotic.disastercheckservice.Models.Notification;
+import com.scpfoundation.psybotic.disastercheckservice.Models.User;
 import com.scpfoundation.psybotic.disastercheckservice.Twitter.TwitterAPIController;
 import com.scpfoundation.psybotic.disastercheckservice.fcm.FCMService;
 import com.scpfoundation.psybotic.disastercheckservice.fcm.PushNotificationController;
@@ -16,9 +18,7 @@ import com.scpfoundation.psybotic.disastercheckservice.fcm.service.PushNotificat
 import net.minidev.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -39,57 +39,95 @@ public class ScheuledTasks {
 
     public void islemleribaslat() throws TwitterException, JsonProcessingException {
         TwitterAPIController twc=new TwitterAPIController();
-        ArrayList<Disaster> nereden;
-        nereden=twc.getUserTimeLine("DepremDairesi");
-        //System.out.println(nereden);
+        ArrayList<Disaster> twits_of_disaster;
+        twits_of_disaster=twc.getUserTimeLine("DepremDairesi");
         RestTemplate rest = new RestTemplate();
         String pushingurl = "https://limitless-lake-96203.herokuapp.com/disasters/insert";
-        String findingById = "https://limitless-lake-96203.herokuapp.com/disasters/findById?id=";
-        System.out.println(nereden.toString());
-        for (int i=0;i<nereden.size();i++)
+        String findingByIdDisaster = "https://limitless-lake-96203.herokuapp.com/disasters/findById?id=";
+        String pushingNotificationDb= "https://limitless-lake-96203.herokuapp.com//notifications/insert";
+        String findNearByuserurl="http://limitless-lake-96203.herokuapp.com/users/findByNearLocation?city=";
+        System.out.println(twits_of_disaster.size());
+        for (int i = 0; i <twits_of_disaster.size() ; i++) {
+            System.out.println("---------"+twits_of_disaster.get(i).getLocation()+twits_of_disaster.get(i).getLocation());
+            System.out.println(twits_of_disaster.get(i).getLocation()+twits_of_disaster.get(i).getId());
+        }
+        for (int i=0;i<twits_of_disaster.size();i++)
         {
-            PushNotificationController pushNotificationController;
-            String id=nereden.get(i).getId();
-            findingById=findingById+id;
-            Disaster ds2 = rest.getForObject(findingById,Disaster.class);
-            //System.out.println(ds2.toString());
-
+            System.out.println("---------"+twits_of_disaster.get(i).getLocation()+twits_of_disaster.get(i).getLocation());
+            System.out.println(twits_of_disaster.get(i).getLocation()+twits_of_disaster.get(i).getId());
+            String id=twits_of_disaster.get(i).getId();
+            findingByIdDisaster=findingByIdDisaster+id;
+            Disaster ds2 = rest.getForObject(findingByIdDisaster,Disaster.class);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
             if(ds2==null)
             {
-                Disaster d = new Disaster();
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
                 JSONObject disasterJsonObject = new JSONObject();
-                disasterJsonObject.put("id", nereden.get(i).getId());
-                disasterJsonObject.put("type",nereden.get(i).getType());
-                disasterJsonObject.put("location",nereden.get(i).getLocation());
-                //disasterJsonObject.put("date",nereden.get(i).getDate().toString());
-                disasterJsonObject.put("latitude",nereden.get(i).getLatitude());
-                disasterJsonObject.put("longitude",nereden.get(i).getLongitude());
+                disasterJsonObject.put("id", twits_of_disaster.get(i).getId());
+                disasterJsonObject.put("type",twits_of_disaster.get(i).getType());
+                disasterJsonObject.put("location",twits_of_disaster.get(i).getLocation());
+                //disasterJsonObject.put("date",twits_of_disaster.get(i).getDate());
+                disasterJsonObject.put("latitude",twits_of_disaster.get(i).getLatitude());
+                disasterJsonObject.put("longitude",twits_of_disaster.get(i).getLongitude());
                 HttpEntity<String> request =
                         new HttpEntity<String>(disasterJsonObject.toString(), headers);
                 String personResultAsJsonStr =
                         rest.postForObject(pushingurl, request, String.class);
                 JsonNode root = objectMapper.readTree(personResultAsJsonStr);
                 System.out.println("Yeni bir felaket eklendi");
-                String token="cclK5owbSgOhaS021fUGzR:APA91bHANIxto1pPoKyFQIMtOxBFzwXfnUUSjioArd0j-WLQ8nWafZ_hF0s527QnE8Zb9wBRSSyoclPBi2Luv-PvIyQ3UTWp8zhbEustj83qvYScnyQ7dEPodp4K341up-ZnjdL0qH-J";
-                PushNotificationRequest req=new PushNotificationRequest();
-                PushNotificationService s1 = new PushNotificationService(new FCMService());
-                req.setTitle("DEPREM OLDU");
-                req.setMessage(disasterJsonObject.toString());
-                req.setToken(token);
-                s1.sendPushNotificationToToken(req);
+                Notification newNotification = new Notification();
+                Date date = new Date(System.currentTimeMillis());
+                newNotification.setNotificationId(twits_of_disaster.get(i).getId());
+                newNotification.setSendingDate(date);
+                newNotification.setReply(false);
+                newNotification.setStatus(true);
+                newNotification.setTextHeader("Iyi Misin?");
+                String city="\""+twits_of_disaster.get(i).getLocation()+"\""+"&";
+                String latitude="latitude="+twits_of_disaster.get(i).getLatitude()+"&";
+                String longitude="longitude="+twits_of_disaster.get(i).getLatitude();
+                String findingnearbyuserurl=findNearByuserurl+city+latitude+longitude;
+                System.out.println(findingnearbyuserurl);
+                System.out.println("Olusturtuldum");
+                ResponseEntity<Object[]> responseEntity = rest.getForEntity(findingnearbyuserurl, Object[].class);
+                Object[] objects = responseEntity.getBody();
+                MediaType contentType = responseEntity.getHeaders().getContentType();
+                HttpStatus statusCode = responseEntity.getStatusCode();
 
+                for (int j = 0; j < objects.length ; j++) {
+                    User users=(User)objects[j];
+                    newNotification.setUserId(users.getId());
+                    String text="Merhaba"+users.getFirstName()
+                            +"Seni Cok Merak Ettik"+"Yasadigin Bolgedeye yakin"
+                            +twits_of_disaster.get(i).getLocation()+"'da"+twits_of_disaster.get(i).getType()+"yasandi."
+                            +"Umarim sen sevdiklerin ve ailen iyidir."+
+                            "Lutfen beni bilgilendirir misin,Nasilsin?";
+                    newNotification.setText(text);
+                    JSONObject notificationJsonObject = new JSONObject();
+                    notificationJsonObject.put("notificationId",newNotification.getNotificationId());
+                    notificationJsonObject.put("userId",newNotification.getUserId());
+                    notificationJsonObject.put("textHeader",newNotification.getTextHeader());
+                    notificationJsonObject.put("text",newNotification.getText());
+                    notificationJsonObject.put("status",newNotification.isStatus());
+                    notificationJsonObject.put("reply",newNotification.isReply());
+                    notificationJsonObject.put("sendingDate",newNotification.getSendingDate());
+                    HttpEntity<String> request_notification =
+                            new HttpEntity<String>(disasterJsonObject.toString(), headers);
+                    String notificationResultAsJsonStr =
+                            rest.postForObject(pushingNotificationDb, request_notification, String.class);
+                    JsonNode root_notificaiton = objectMapper.readTree(notificationResultAsJsonStr);
+                    String token=users.getDeviceToken();
+                    if(token!=null) {
+                        PushNotificationRequest req = new PushNotificationRequest();
+                        PushNotificationService s1 = new PushNotificationService(new FCMService());
+                        req.setTitle(newNotification.getTextHeader());
+                        req.setMessage(newNotification.getText());
+                        req.setToken(token);
+                        s1.sendPushNotificationToToken(req);
+                    }
+                }
             }
             else
             {
-                String token="cclK5owbSgOhaS021fUGzR:APA91bHANIxto1pPoKyFQIMtOxBFzwXfnUUSjioArd0j-WLQ8nWafZ_hF0s527QnE8Zb9wBRSSyoclPBi2Luv-PvIyQ3UTWp8zhbEustj83qvYScnyQ7dEPodp4K341up-ZnjdL0qH-J";
-                PushNotificationRequest req=new PushNotificationRequest();
-                PushNotificationService s1 = new PushNotificationService(new FCMService());
-                req.setTitle("Deprem Olmadi");
-                req.setMessage("Bu Bir Bilgilendirme Mesajidir");
-                req.setToken(token);
-                s1.sendPushNotificationToToken(req);
                 System.out.println("Sistem Guncel");
                 break;
             }
