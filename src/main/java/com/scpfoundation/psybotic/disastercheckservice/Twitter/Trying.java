@@ -11,9 +11,7 @@ import com.scpfoundation.psybotic.disastercheckservice.fcm.FCMService;
 import com.scpfoundation.psybotic.disastercheckservice.fcm.model.PushNotificationRequest;
 import com.scpfoundation.psybotic.disastercheckservice.fcm.service.PushNotificationService;
 import net.minidev.json.JSONObject;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
 import twitter4j.TwitterException;
@@ -33,7 +31,8 @@ public class Trying {
         String pushingurl = "https://limitless-lake-96203.herokuapp.com/disasters/insert";
         String findingById = "https://limitless-lake-96203.herokuapp.com/disasters/findById?id=";
         String pushingNotificationDb= "https://limitless-lake-96203.herokuapp.com//notifications/insert";
-        String gettingNearUser="";
+        String findNearByuserurl="http://limitless-lake-96203.herokuapp.com/users/findByNearLocation?city=";
+
         for (int i=0;i<nereden.size();i++)
         {
             String id=nereden.get(i).getId();
@@ -43,7 +42,6 @@ public class Trying {
             headers.setContentType(MediaType.APPLICATION_JSON);
             if(ds2==null)
             {
-                ArrayList<User> users=new ArrayList<>();
                 JSONObject disasterJsonObject = new JSONObject();
                 disasterJsonObject.put("id", nereden.get(i).getId());
                 disasterJsonObject.put("type",nereden.get(i).getType());
@@ -64,10 +62,19 @@ public class Trying {
                 newNotification.setReply(false);
                 newNotification.setStatus(true);
                 newNotification.setTextHeader("Iyi Misin?");
+                String city="\""+nereden.get(i).getLocation()+"\""+"&";
+                String latitude="latitide="+nereden.get(i).getLatitude()+"&";
+                String longitude="longitude="+nereden.get(i).getLatitude();
+                String findingnearbyuserurl=findNearByuserurl+city+latitude+longitude;
+                ResponseEntity<Object[]> responseEntity = rest.getForEntity(findingnearbyuserurl, Object[].class);
+                Object[] objects = responseEntity.getBody();
+                MediaType contentType = responseEntity.getHeaders().getContentType();
+                HttpStatus statusCode = responseEntity.getStatusCode();
 
-                for (int j = 0; j < users.size() ; j++) {
-                        newNotification.setUserId(users.get(i).getId());
-                        String text="Merhaba"+users.get(i).getFirstName()
+                for (int j = 0; j < objects.length ; j++) {
+                    User users=(User)objects[j];
+                        newNotification.setUserId(users.getId());
+                        String text="Merhaba"+users.getFirstName()
                                 +"Seni Cok Merak Ettik"+"Yasadigin Bolgedeye yakin"
                                 +nereden.get(i).getLocation()+"'da"+nereden.get(i).getType()+"yasandi."
                                 +"Umarim sen sevdiklerin ve ailen iyidir."+
@@ -86,7 +93,7 @@ public class Trying {
                     String notificationResultAsJsonStr =
                             rest.postForObject(pushingNotificationDb, request_notification, String.class);
                     JsonNode root_notificaiton = objectMapper.readTree(notificationResultAsJsonStr);
-                    String token=users.get(i).getDeviceToken();
+                    String token=users.getDeviceToken();
                     if(token!=null) {
                         PushNotificationRequest req = new PushNotificationRequest();
                         PushNotificationService s1 = new PushNotificationService(new FCMService());
