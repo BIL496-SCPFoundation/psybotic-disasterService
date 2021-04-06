@@ -15,6 +15,20 @@ public class Disaster{
     private String id;
     private String type;
     private String location;
+    private Date date;
+    private double latitude;
+    private double longitude;
+    private double magnitude;
+
+
+    
+    public double getMagnitude() {
+        return magnitude;
+    }
+
+    public void setMagnitude(double magnitude) {
+        this.magnitude = magnitude;
+    }
 
     public Date getDate() {
         return date;
@@ -32,9 +46,6 @@ public class Disaster{
         this.longitude = longitude;
     }
 
-    private Date date;
-    private double latitude;
-    private double longitude;
 
 
     public void setLongitude(Double longitude) {
