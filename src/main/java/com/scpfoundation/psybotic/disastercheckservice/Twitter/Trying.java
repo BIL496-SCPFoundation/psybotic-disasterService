@@ -35,7 +35,6 @@ public class Trying {
 
         for (int i=0;i<twits_of_disaster.size();i++)
         {
-
             String id=twits_of_disaster.get(i).getId();
             findingByIdDisaster=findingByIdDisaster+id;
             Disaster ds2 = rest.getForObject(findingByIdDisaster,Disaster.class);
@@ -112,7 +111,7 @@ public class Trying {
             else
                 {
 
-                    System.out.println("Burda OLmasi Beklemir");
+                    System.out.println("Sistem Guncel");
                     break;
                 }
 
