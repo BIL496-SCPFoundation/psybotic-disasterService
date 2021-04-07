@@ -1,6 +1,7 @@
 package com.scpfoundation.psybotic.disastercheckservice.Twitter;
 
 import com.scpfoundation.psybotic.disastercheckservice.Models.Disaster;
+import com.scpfoundation.psybotic.disastercheckservice.Models.MyLocation;
 import twitter4j.*;
 import twitter4j.conf.ConfigurationBuilder;
 import java.util.*;
@@ -11,23 +12,23 @@ public class TwitterAPIController {
     private ConfigurationBuilder cb;
 
     public static ArrayList<Disaster> disaster=new ArrayList<>();
-    public static String[] citysInTurkey={"Adana", "Adıyaman",
-            "Afyonkarahisar", "Ağrı", "Aksaray", "Amasya", "Ankara", "Antalya", "Ardahan", "Artvin", "Aydın",
-            "Balıkesir", "Bartın", "Batman", "Bayburt", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa",
-            "Çanakkale", "Çankırı", "Çorum",
-            "Denizli", "Diyarbakır", "Düzce",
-            "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir",
-            "Gaziantep", "Giresun", "Gümüşhane",
-            "Hakkâri", "Hatay",
-            "Iğdır", "Isparta", "İstanbul", "İzmir",
-            "Kahramanmaraş", "Karabük", "Karaman", "Kars", "Kastamonu", "Kayseri", "Kilis", "Kırıkkale", "Kırklareli", "Kırşehir", "Kocaeli", "Konya", "Kütahya",
-            "Malatya", "Manisa", "Mardin", "Mersin", "Muğla", "Muş",
-            "Nevşehir", "Niğde",
+    public static String[] citysInTurkey={"Adana", "Adiyaman",
+            "Afyonkarahisar", "Agri", "Aksaray", "Amasya", "Ankara", "Antalya", "Ardahan", "Artvin", "Aydin",
+            "Balikesir", "Bartin", "Batman", "Bayburt", "Bilecik", "Bingol", "Bitlis", "Bolu", "Burdur", "Bursa",
+            "Canakkale", "Cankiri", "Corum",
+            "Denizli", "Diyarbakir", "Duzce",
+            "Edirne", "Elazig", "Erzincan", "Erzurum", "Eskisehir",
+            "Gaziantep", "Giresun", "Gumushane",
+            "Hakkari", "Hatay",
+            "Igdir", "Isparta", "Istanbul", "Izmir",
+            "Kahramanmaras", "Karabuk", "Karaman", "Kars", "Kastamonu", "Kayseri", "Kilis", "Kirikkale", "Kirklareli", "Kirsehir", "Kocaeli", "Konya", "Kutahya",
+            "Malatya", "Manisa", "Mardin", "Mersin", "Mugla", "Mus",
+            "Nevsehir", "Nigde",
             "Ordu", "Osmaniye",
             "Rize",
-            "Sakarya", "Samsun", "Şanlıurfa", "Siirt", "Sinop", "Sivas", "Şırnak",
-            "Tekirdağ", "Tokat", "Trabzon", "Tunceli",
-            "Uşak",
+            "Sakarya", "Samsun", "Sanliurfa", "Siirt", "Sinop", "Sivas", "Sirnak",
+            "Tekirdag", "Tokat", "Trabzon", "Tunceli",
+            "Usak",
             "Van",
             "Yalova", "Yozgat",
             "Zonguldak"};
@@ -104,16 +105,22 @@ public class TwitterAPIController {
                 if(!tarihteBugunMu) {
                     for (int a = 0; a < hashTags.size(); a++) {
                         if (hashTags.get(a).equals("Deprem")) {
-                            System.out.println(tw.getText());
-                            System.out.println(tw.getTime());
+                            //System.out.println(tw.getText());
+                            //System.out.println(tw.getTime());
                             Disaster ds1 = new Disaster();
                             ds1.setDate(tw.getTime());
                             ds1.setId(tw.getId());
                             ds1.setType("Deprem");
+                            String buyuk=tw.getText().substring(tw.getText().indexOf("Büyüklük : "),tw.getText().indexOf("Yer"));
+                            String[] buyukluk_row=buyuk.split(" ");
+                            Double power=Double.parseDouble(buyukluk_row[2]);
+                            ds1.setMagnitude(power);
                             String yer = tw.getText().substring(tw.getText().indexOf("Yer"), tw.getText().indexOf("Tarih-Saat"));
-                            String[] yerler = yer.split(" ");
-                            String istenen = yerler[3].substring(1) + "-" + yerler[2];
-                            ds1.setLocation(istenen);
+                            yer=yer.substring(0,yer.lastIndexOf(")")+1);
+                            String[] citys=yer.split(" ");
+                            MyLocation location_full_citys_province=ilibul(citys,yer);
+                            String str=location_full_citys_province.locationName();
+                            ds1.setLocation(str);
                             String enlem = tw.getText().substring(tw.getText().indexOf("Enlem"), tw.getText().indexOf("Boylam"));
                             String[] istenen_enlem = enlem.split(" ");
                             Double enlem_cinsi = Double.parseDouble(istenen_enlem[2]);
@@ -122,14 +129,13 @@ public class TwitterAPIController {
                             String[] istenen_boylam = boylam.split(" ");
                             Double boylam_cinsi = Double.parseDouble(istenen_boylam[2]);
                             ds1.setLongitude(boylam_cinsi);
-                            System.out.println(ds1.toString());
+                            //System.out.println(ds1.toString());
                             disaster.add(ds1);
-                            System.out.println("-----------------********************------------------");
+                            //System.out.println("-----------------********************------------------");
                         }
                     }
                 }
             }
-            System.exit(0);
             return disaster;
         }
         catch (TwitterException te) {
@@ -138,6 +144,54 @@ public class TwitterAPIController {
             System.exit(-1);
             return null;
         }
+    }
+
+    private MyLocation ilibul(String[] yer,String ifade) {
+        int parantezliifade=countparantez(ifade);
+        MyLocation l1 = null;
+        int beforeparentez=0;
+        int ilifadesi=0;
+        if(parantezliifade>1)
+        {
+            int temp=0;
+            for (int i = 0; i <yer.length; i++) {
+
+                    if (yer[i].indexOf("(") >= 0) {
+                        temp++;
+                        if(temp==parantezliifade) {
+
+                            beforeparentez = i - 1;
+                            ilifadesi = i;
+                            break;
+                        }
+                    }
+
+            }
+            l1=new MyLocation(yer[ilifadesi],yer[beforeparentez]);
+        }
+        else
+        {
+            for (int i = 0; i <yer.length; i++) {
+                if(yer[i].indexOf("(")>=0)
+                {
+                    beforeparentez=i-1;
+                    ilifadesi=i;
+                    break;
+                }
+            }
+            l1=new MyLocation(yer[ilifadesi],yer[beforeparentez]);
+        }
+        return l1;
+    }
+
+    private int countparantez(String ifade) {
+        int sayisi=0;
+        for (int i = 0; i <ifade.length(); i++) {
+            if(ifade.charAt(i)==40)
+                sayisi++;
+        }
+
+        return sayisi;
     }
 
     private boolean tarihteBugunTwiti(List<String> hashTags) {

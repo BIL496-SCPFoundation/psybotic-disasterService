@@ -32,15 +32,10 @@ public class Trying {
         String findingByIdDisaster = "https://limitless-lake-96203.herokuapp.com/disasters/findById?id=";
         String pushingNotificationDb= "https://limitless-lake-96203.herokuapp.com//notifications/insert";
         String findNearByuserurl="http://limitless-lake-96203.herokuapp.com/users/findByNearLocation?city=";
-        System.out.println(twits_of_disaster.size());
-        for (int i = 0; i <twits_of_disaster.size() ; i++) {
-            System.out.println("---------"+twits_of_disaster.get(i).getLocation()+twits_of_disaster.get(i).getLocation());
-            System.out.println(twits_of_disaster.get(i).getLocation()+twits_of_disaster.get(i).getId());
-        }
+
         for (int i=0;i<twits_of_disaster.size();i++)
         {
-            System.out.println("---------"+twits_of_disaster.get(i).getLocation()+twits_of_disaster.get(i).getLocation());
-            System.out.println(twits_of_disaster.get(i).getLocation()+twits_of_disaster.get(i).getId());
+
             String id=twits_of_disaster.get(i).getId();
             findingByIdDisaster=findingByIdDisaster+id;
             Disaster ds2 = rest.getForObject(findingByIdDisaster,Disaster.class);
@@ -55,6 +50,7 @@ public class Trying {
                     //disasterJsonObject.put("date",twits_of_disaster.get(i).getDate());
                     disasterJsonObject.put("latitude",twits_of_disaster.get(i).getLatitude());
                     disasterJsonObject.put("longitude",twits_of_disaster.get(i).getLongitude());
+                    disasterJsonObject.put("magnitude",twits_of_disaster.get(i).getMagnitude());
                     HttpEntity<String> request =
                             new HttpEntity<String>(disasterJsonObject.toString(), headers);
                     String personResultAsJsonStr =

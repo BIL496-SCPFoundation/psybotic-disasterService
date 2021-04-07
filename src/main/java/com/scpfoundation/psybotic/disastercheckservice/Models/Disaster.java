@@ -21,7 +21,7 @@ public class Disaster{
     private double magnitude;
 
 
-    
+
     public double getMagnitude() {
         return magnitude;
     }
@@ -135,6 +135,7 @@ public class Disaster{
                 ", date=" + date +
                 ", latitude=" + latitude +
                 ", longitude=" + longitude +
+                ", magnitude=" + magnitude +
                 '}';
     }
 }
