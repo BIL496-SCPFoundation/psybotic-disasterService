@@ -47,10 +47,11 @@ public class Trying {
                     disasterJsonObject.put("id", twits_of_disaster.get(i).getId());
                     disasterJsonObject.put("type",twits_of_disaster.get(i).getType());
                     disasterJsonObject.put("location",twits_of_disaster.get(i).getLocation());
-                    //disasterJsonObject.put("date",twits_of_disaster.get(i).getDate());
+                    System.out.println(twits_of_disaster.get(i).getDate());
+                    disasterJsonObject.put("date",twits_of_disaster.get(i).getDate().getTime()+10800000);
                     disasterJsonObject.put("latitude",twits_of_disaster.get(i).getLatitude());
                     disasterJsonObject.put("longitude",twits_of_disaster.get(i).getLongitude());
-                    disasterJsonObject.put("magnitude",twits_of_disaster.get(i).getMagnitude());
+                   //disasterJsonObject.put("magnitude",twits_of_disaster.get(i).getMagnitude());
                     HttpEntity<String> request =
                             new HttpEntity<String>(disasterJsonObject.toString(), headers);
                     String personResultAsJsonStr =
