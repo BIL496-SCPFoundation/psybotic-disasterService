@@ -39,7 +39,7 @@ public class ScheuledTasks {
 
     public void islemleribaslat() throws TwitterException, JsonProcessingException {
         TwitterAPIController twc=new TwitterAPIController();
-        ArrayList<Disaster> twits_of_disaster;
+        ArrayList<Disaster> twits_of_disaster=new ArrayList<>();
         twits_of_disaster=twc.getUserTimeLine("DepremDairesi");
         RestTemplate rest = new RestTemplate();
         String pushingurl = "https://limitless-lake-96203.herokuapp.com/disasters/insert";
@@ -47,14 +47,17 @@ public class ScheuledTasks {
         String pushingNotificationDb= "https://limitless-lake-96203.herokuapp.com//notifications/insert";
         String findNearByuserurl="http://limitless-lake-96203.herokuapp.com/users/findByNearLocation?city=";
         System.out.println(twits_of_disaster.size());
-
+        System.out.println(new Date());
         for (int i=0;i<twits_of_disaster.size();i++)
         {
             String id=twits_of_disaster.get(i).getId();
+            findingByIdDisaster="https://limitless-lake-96203.herokuapp.com/disasters/findById?id=";
             findingByIdDisaster=findingByIdDisaster+id;
             Disaster ds2 = rest.getForObject(findingByIdDisaster,Disaster.class);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
+            System.out.println("Create Disaster"+ds2);
+            System.out.println("My twit"+twits_of_disaster.get(i));
             if(ds2==null)
             {
                 JSONObject disasterJsonObject = new JSONObject();
