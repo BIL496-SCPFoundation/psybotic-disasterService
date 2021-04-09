@@ -128,8 +128,8 @@ public class ScheuledTasks {
             }
             else
             {
-                System.out.println("Sistem Guncel");
-                break;
+                System.out.println("Disaster Mevcut");
+
             }
 
         }
