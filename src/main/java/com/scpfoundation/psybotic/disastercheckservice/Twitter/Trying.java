@@ -10,6 +10,7 @@ import com.scpfoundation.psybotic.disastercheckservice.Models.User;
 import com.scpfoundation.psybotic.disastercheckservice.fcm.FCMService;
 import com.scpfoundation.psybotic.disastercheckservice.fcm.model.PushNotificationRequest;
 import com.scpfoundation.psybotic.disastercheckservice.fcm.service.PushNotificationService;
+import com.sun.tools.corba.se.idl.constExpr.Not;
 import net.minidev.json.JSONObject;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
@@ -19,11 +20,36 @@ import twitter4j.TwitterException;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class Trying {
     private static final ObjectMapper objectMapper = new ObjectMapper();
-
+    static final long TIMEISANOTIFICAITON =43200000;
     public static void main(String[] args) throws TwitterException, JsonProcessingException {
+
+        controlReplyTime();
+
+    }
+    private static void controlReplyTime() {
+        String getNoReplyedNotification="https://limitless-lake-96203.herokuapp.com/notifications/findByNotificationNoReply?bildiri=false&reply=false";
+        String getEmergencyContactThisUser="https://limitless-lake-96203.herokuapp.com/users/emergencyContacts";
+        RestTemplate rest = new RestTemplate();
+        ResponseEntity<Notification[]> responseEntity = rest.getForEntity(getNoReplyedNotification, Notification[].class);
+        Notification[] notifications = responseEntity.getBody();
+        Date currentDate=new Date();
+        Long currentDateTime =currentDate.getTime();
+        System.out.println(currentDate+" "+currentDateTime);
+        ArrayList<Notification> ntf=new ArrayList<>();
+        for (int i = 0; i <notifications.length ; i++) {
+            Long notifitcationdatetime=notifications[i].getSendingDate().getTime()-10800000;
+            if((currentDateTime-notifitcationdatetime)>TIMEISANOTIFICAITON)
+                ntf.add(notifications[i]);
+        }
+        System.out.println(ntf);
+    }
+
+
+        /*
         TwitterAPIController twc=new TwitterAPIController();
         ArrayList<Disaster> twits_of_disaster;
         twits_of_disaster=twc.getUserTimeLine("DepremDairesi");
@@ -117,4 +143,6 @@ public class Trying {
 
         }
     }
+
+         */
 }

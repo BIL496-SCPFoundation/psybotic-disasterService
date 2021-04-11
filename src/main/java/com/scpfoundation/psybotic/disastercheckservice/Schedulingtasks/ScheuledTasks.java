@@ -34,7 +34,17 @@ public class ScheuledTasks {
     public void reportCurrentTime() throws TwitterException, JsonProcessingException {
         log.info("The time is now {}", dateFormat.format(new Date()));
         islemleribaslat();
+        controlReplyTime();
     }
+
+    private void controlReplyTime() {
+        String getNoReplyedNotification="https://limitless-lake-96203.herokuapp.com/notifications/findByNotificationNoReply?bildiri=false&reply=false";
+        String getEmergencyContactThisUser="https://limitless-lake-96203.herokuapp.com/users/emergencyContacts";
+        RestTemplate rest = new RestTemplate();
+        ResponseEntity<Notification> NoReplyNotification=rest.getForEntity(getNoReplyedNotification,Notification.class);
+
+    }
+
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public void islemleribaslat() throws TwitterException, JsonProcessingException {
