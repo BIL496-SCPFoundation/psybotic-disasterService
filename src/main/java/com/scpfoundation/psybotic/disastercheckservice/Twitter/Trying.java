@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.scpfoundation.psybotic.disastercheckservice.Models.Disaster;
 
+import com.scpfoundation.psybotic.disastercheckservice.Models.EmergencyContact;
 import com.scpfoundation.psybotic.disastercheckservice.Models.Notification;
 import com.scpfoundation.psybotic.disastercheckservice.Models.User;
 import com.scpfoundation.psybotic.disastercheckservice.fcm.FCMService;
@@ -32,7 +33,7 @@ public class Trying {
     }
     private static void controlReplyTime() {
         String getNoReplyedNotification="https://limitless-lake-96203.herokuapp.com/notifications/findByNotificationNoReply?bildiri=false&reply=false";
-        String getEmergencyContactThisUser="https://limitless-lake-96203.herokuapp.com/users/emergencyContacts";
+        String getEmergencyContactThisUser="https://limitless-lake-96203.herokuapp.com/emergencyContacts/findBySuperId?super_id=";
         RestTemplate rest = new RestTemplate();
         ResponseEntity<Notification[]> responseEntity = rest.getForEntity(getNoReplyedNotification, Notification[].class);
         Notification[] notifications = responseEntity.getBody();
@@ -41,11 +42,30 @@ public class Trying {
         System.out.println(currentDate+" "+currentDateTime);
         ArrayList<Notification> ntf=new ArrayList<>();
         for (int i = 0; i <notifications.length ; i++) {
+            //Time control
             Long notifitcationdatetime=notifications[i].getSendingDate().getTime()-10800000;
             if((currentDateTime-notifitcationdatetime)>TIMEISANOTIFICAITON)
                 ntf.add(notifications[i]);
         }
-        System.out.println(ntf);
+        for (int i=0;i<ntf.size();i++)
+        {
+            Notification a1=ntf.get(i);
+            String user_id=a1.getUserId();
+            String mesaj=a1.getText();
+            Date date=a1.getSendingDate();
+            ResponseEntity<EmergencyContact[]> responseEntity1=rest.getForEntity(getEmergencyContactThisUser+user_id,EmergencyContact[].class);
+            EmergencyContact[] emergencyperson=responseEntity1.getBody();
+            for (int j=0;j<emergencyperson.length;j++)
+            {
+                EmergencyContact emerge=emergencyperson[j];
+                String email=emerge.getEmail();
+                String isim=emerge.getFirstName();
+                System.out.println(isim+" Adli Emergency Contacta "+email+" Adresine Mail Gonderildi ");
+            }
+
+        }
+
+
     }
 
 
