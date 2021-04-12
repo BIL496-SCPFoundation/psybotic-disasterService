@@ -53,6 +53,7 @@ public class Trying {
             String user_id=a1.getUserId();
             String mesaj=a1.getText();
             Date date=a1.getSendingDate();
+
             ResponseEntity<EmergencyContact[]> responseEntity1=rest.getForEntity(getEmergencyContactThisUser+user_id,EmergencyContact[].class);
             EmergencyContact[] emergencyperson=responseEntity1.getBody();
             for (int j=0;j<emergencyperson.length;j++)

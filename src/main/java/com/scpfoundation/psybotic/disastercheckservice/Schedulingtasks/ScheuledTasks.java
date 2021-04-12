@@ -18,11 +18,26 @@ import com.scpfoundation.psybotic.disastercheckservice.fcm.service.PushNotificat
 import net.minidev.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.http.*;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import twitter4j.TwitterException;
+
+
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import java.io.IOException;
+
 
 @Component
 public class ScheuledTasks {
@@ -30,11 +45,35 @@ public class ScheuledTasks {
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
+    @Autowired
+    private JavaMailSender javaMailSender;
+
     @Scheduled(fixedRate = 3600000)
-    public void reportCurrentTime() throws TwitterException, JsonProcessingException {
+    public void reportCurrentTime() throws TwitterException, JsonProcessingException, MessagingException, IOException {
         log.info("The time is now {}", dateFormat.format(new Date()));
-        islemleribaslat();
-        controlReplyTime();
+        //islemleribaslat();
+        //controlReplyTime();
+        System.out.println("Sending Email...");
+
+        AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+        ctx.register(com.concretepage.AppConfig.class);
+        ctx.refresh();
+        JavaMailSenderImpl mailSender = ctx.getBean(JavaMailSenderImpl.class);
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        MimeMessageHelper mailMsg = new MimeMessageHelper(mimeMessage);
+        mailMsg.setFrom("scpFoundation@gmail.com");
+        mailMsg.setTo("i.beratyavas@gmail.com");
+        mailMsg.setSubject("Test mail");
+        mailMsg.setText("Hello World!");
+        mailSender.send(mimeMessage);
+        System.out.println("---Done---");
+
+
+       // sendEmail();
+        //sendEmailWithAttachment();
+
+        System.out.println("Done");
+
     }
 
     private void controlReplyTime() {
@@ -146,6 +185,40 @@ public class ScheuledTasks {
 
         }
 
+    void sendEmail() {
 
+        SimpleMailMessage msg = new SimpleMailMessage();
+        msg.setTo("i.beratyavas@gmail.com");
+
+        msg.setSubject("Testing from Spring Boot");
+        msg.setText("Hello World \n Spring Boot Email");
+
+        javaMailSender.send(msg);
 
     }
+
+    void sendEmailWithAttachment() throws MessagingException, IOException {
+
+        MimeMessage msg = javaMailSender.createMimeMessage();
+
+        // true = multipart message
+        MimeMessageHelper helper = new MimeMessageHelper(msg, true);
+        helper.setTo("1@gmail.com");
+
+        helper.setSubject("Testing from Spring Boot");
+
+        // default = text/plain
+        //helper.setText("Check attachment for image!");
+
+        // true = text/html
+        helper.setText("<h1>Check attachment for image!</h1>", true);
+
+        helper.addAttachment("my_photo.png", new ClassPathResource("android.png"));
+
+        javaMailSender.send(msg);
+
+    }
+}
+
+
+
