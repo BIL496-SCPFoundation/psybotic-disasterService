@@ -1,5 +1,6 @@
 package com.scpfoundation.psybotic.disastercheckservice.Schedulingtasks;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -20,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
@@ -52,23 +54,7 @@ public class ScheuledTasks {
     public void reportCurrentTime() throws TwitterException, JsonProcessingException, MessagingException, IOException {
         log.info("The time is now {}", dateFormat.format(new Date()));
         //islemleribaslat();
-        //controlReplyTime();
-        System.out.println("Sending Email...");
-
-        AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
-        ctx.register(com.concretepage.AppConfig.class);
-        ctx.refresh();
-        JavaMailSenderImpl mailSender = ctx.getBean(JavaMailSenderImpl.class);
-        MimeMessage mimeMessage = mailSender.createMimeMessage();
-        MimeMessageHelper mailMsg = new MimeMessageHelper(mimeMessage);
-        mailMsg.setFrom("scpFoundation@gmail.com");
-        mailMsg.setTo("i.beratyavas@gmail.com");
-        mailMsg.setSubject("Test mail");
-        mailMsg.setText("Hello World!");
-        mailSender.send(mimeMessage);
-        System.out.println("---Done---");
-
-
+        controlReplyTime();
        // sendEmail();
         //sendEmailWithAttachment();
 
@@ -82,6 +68,26 @@ public class ScheuledTasks {
         RestTemplate rest = new RestTemplate();
         ResponseEntity<Notification> NoReplyNotification=rest.getForEntity(getNoReplyedNotification,Notification.class);
 
+    }
+
+    private void sendMail(String setTo,String setSubject,String setText) throws MessagingException {
+        System.out.println("Sending Email...");
+        AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+        ctx.register(AppConfig.class);
+        ctx.refresh();
+        JavaMailSenderImpl mailSender = ctx.getBean(JavaMailSenderImpl.class);
+        MimeMessage mimeMessage = mailSender.createMimeMessage();
+        //Pass true flag for multipart message
+        MimeMessageHelper mailMsg = new MimeMessageHelper(mimeMessage, true);
+        mailMsg.setFrom("scpFoundation@gmail.com");
+        mailMsg.setTo(setTo);
+        mailMsg.setSubject(setSubject);
+        mailMsg.setText(setText);
+        //FileSystemResource object for Attachment
+        FileSystemResource file = new FileSystemResource(new File("/Users/macbookpro/IdeaProjects/psybotic-disasterService/src/main/resources/logo.png"));
+        mailMsg.addAttachment("myPic.jpg", file);
+        mailSender.send(mimeMessage);
+        System.out.println("---Done---");
     }
 
     private static final ObjectMapper objectMapper = new ObjectMapper();

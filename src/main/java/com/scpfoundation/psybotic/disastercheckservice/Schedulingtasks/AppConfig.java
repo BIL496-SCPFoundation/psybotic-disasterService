@@ -1,4 +1,4 @@
-package com.concretepage;
+package com.scpfoundation.psybotic.disastercheckservice.Schedulingtasks;
 
 import java.util.Properties;
 

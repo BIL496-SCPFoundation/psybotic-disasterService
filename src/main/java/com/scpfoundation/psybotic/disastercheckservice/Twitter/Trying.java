@@ -8,17 +8,25 @@ import com.scpfoundation.psybotic.disastercheckservice.Models.Disaster;
 import com.scpfoundation.psybotic.disastercheckservice.Models.EmergencyContact;
 import com.scpfoundation.psybotic.disastercheckservice.Models.Notification;
 import com.scpfoundation.psybotic.disastercheckservice.Models.User;
+import com.scpfoundation.psybotic.disastercheckservice.Schedulingtasks.AppConfig;
 import com.scpfoundation.psybotic.disastercheckservice.fcm.FCMService;
 import com.scpfoundation.psybotic.disastercheckservice.fcm.model.PushNotificationRequest;
 import com.scpfoundation.psybotic.disastercheckservice.fcm.service.PushNotificationService;
 import com.sun.tools.corba.se.idl.constExpr.Not;
 import net.minidev.json.JSONObject;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.web.client.RestTemplate;
 
 import twitter4j.TwitterException;
 
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -26,12 +34,40 @@ import java.util.List;
 public class Trying {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     static final long TIMEISANOTIFICAITON =43200000;
-    public static void main(String[] args) throws TwitterException, JsonProcessingException {
-
+    private static MimeMessage mimeMessage;
+    private static JavaMailSenderImpl mailSender;
+    public static void main(String[] args) throws TwitterException, JsonProcessingException, MessagingException {
+        mailVerileriniOlustur();
         controlReplyTime();
 
     }
-    private static void controlReplyTime() {
+
+    private static void mailVerileriniOlustur() {
+        System.out.println("Mail Verileri Olusturuluyor");
+        AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+        ctx.register(AppConfig.class);
+        ctx.refresh();
+         mailSender = ctx.getBean(JavaMailSenderImpl.class);
+         mimeMessage = mailSender.createMimeMessage();
+    }
+
+    private static void  sendMail(String setTo,String setSubject,String setText) throws MessagingException {
+        System.out.println("Sending Email...");
+        MimeMessageHelper mailMsg = new MimeMessageHelper(mimeMessage, true);
+        mailMsg.setFrom("scpFoundation@gmail.com");
+        mailMsg.setTo(setTo);
+        mailMsg.setSubject(setSubject);
+        mailMsg.setText(setText);
+        //FileSystemResource object for Attachment
+        FileSystemResource file = new FileSystemResource(new File("/Users/macbookpro/IdeaProjects/psybotic-disasterService/src/main/resources/logo.png"));
+        mailMsg.addAttachment("myPic.jpg", file);
+        mailSender.send(mimeMessage);
+        System.out.println("---Done---");
+    }
+
+
+
+    private static void controlReplyTime() throws MessagingException {
         String getNoReplyedNotification="https://limitless-lake-96203.herokuapp.com/notifications/findByNotificationNoReply?bildiri=false&reply=false";
         String getEmergencyContactThisUser="https://limitless-lake-96203.herokuapp.com/emergencyContacts/findBySuperId?super_id=";
         RestTemplate rest = new RestTemplate();
@@ -52,6 +88,7 @@ public class Trying {
             Notification a1=ntf.get(i);
             String user_id=a1.getUserId();
             String mesaj=a1.getText();
+            String header=a1.getTextHeader();
             Date date=a1.getSendingDate();
 
             ResponseEntity<EmergencyContact[]> responseEntity1=rest.getForEntity(getEmergencyContactThisUser+user_id,EmergencyContact[].class);
@@ -62,6 +99,7 @@ public class Trying {
                 String email=emerge.getEmail();
                 String isim=emerge.getFirstName();
                 System.out.println(isim+" Adli Emergency Contacta "+email+" Adresine Mail Gonderildi ");
+                sendMail(email,header,mesaj);
             }
 
         }
