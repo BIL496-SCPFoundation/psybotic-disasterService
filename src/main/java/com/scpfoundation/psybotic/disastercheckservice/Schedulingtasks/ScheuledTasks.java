@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.scpfoundation.psybotic.disastercheckservice.Models.Disaster;
+import com.scpfoundation.psybotic.disastercheckservice.Models.EmergencyContact;
 import com.scpfoundation.psybotic.disastercheckservice.Models.Notification;
 import com.scpfoundation.psybotic.disastercheckservice.Models.User;
 import com.scpfoundation.psybotic.disastercheckservice.Twitter.TwitterAPIController;
@@ -47,30 +48,65 @@ public class ScheuledTasks {
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
-    @Autowired
-    private JavaMailSender javaMailSender;
+    static final long TIMEISANOTIFICAITON =43200000;
+    private static MimeMessage mimeMessage;
+    private static JavaMailSenderImpl mailSender;
 
     @Scheduled(fixedRate = 3600000)
     public void reportCurrentTime() throws TwitterException, JsonProcessingException, MessagingException, IOException {
         log.info("The time is now {}", dateFormat.format(new Date()));
-        //islemleribaslat();
+        islemleribaslat();
+        mailVerileriniOlustur();
         controlReplyTime();
-       // sendEmail();
-        //sendEmailWithAttachment();
-
-        System.out.println("Done");
+        System.out.println("This Step Is Done");
 
     }
 
-    private void controlReplyTime() {
+    private void controlReplyTime() throws MessagingException {
         String getNoReplyedNotification="https://limitless-lake-96203.herokuapp.com/notifications/findByNotificationNoReply?bildiri=false&reply=false";
-        String getEmergencyContactThisUser="https://limitless-lake-96203.herokuapp.com/users/emergencyContacts";
+        String getEmergencyContactThisUser="https://limitless-lake-96203.herokuapp.com/emergencyContacts/findBySuperId?super_id=";
         RestTemplate rest = new RestTemplate();
-        ResponseEntity<Notification> NoReplyNotification=rest.getForEntity(getNoReplyedNotification,Notification.class);
+        ResponseEntity<Notification[]> responseEntity = rest.getForEntity(getNoReplyedNotification, Notification[].class);
+        Notification[] notifications = responseEntity.getBody();
+        Date currentDate=new Date();
+        Long currentDateTime =currentDate.getTime();
+        System.out.println(currentDate+" "+currentDateTime);
+        ArrayList<Notification> ntf=new ArrayList<>();
+        for (int i = 0; i <notifications.length ; i++) {
+            //Time control
+            Long notifitcationdatetime=notifications[i].getSendingDate().getTime()-10800000;
+            if((currentDateTime-notifitcationdatetime)>TIMEISANOTIFICAITON)
+                ntf.add(notifications[i]);
+        }
+        for (int i=0;i<ntf.size();i++)
+        {
+            Notification a1=ntf.get(i);
+            String user_id=a1.getUserId();
+            String mesaj=a1.getText();
+            String header=a1.getTextHeader();
+            Date date=a1.getSendingDate();
+
+            ResponseEntity<EmergencyContact[]> responseEntity1=rest.getForEntity(getEmergencyContactThisUser+user_id,EmergencyContact[].class);
+            EmergencyContact[] emergencyperson=responseEntity1.getBody();
+            for (int j=0;j<emergencyperson.length;j++)
+            {
+                EmergencyContact emerge=emergencyperson[j];
+                String email=emerge.getEmail();
+                String isim=emerge.getFirstName();
+                System.out.println(isim+" Adli Emergency Contacta "+email+" Adresine Mail Gonderildi ");
+                sendMail(email,"Sevdigin Icin Endiseliyiz...","Merhaba "+isim+"\n"+"\n"+"\n"+" Senin bir yakini oldugunu dusungumuz kullancimiza : \n" +
+                        mesaj+"\n"+" " +
+                        "Seklinde Mesaj Yolladik 12 Saatten fazla bir sure gectigi icin seni bilgilendirmek istedik. \n"
+                        +"Umariz Hersey Yolundandir.\n"+"Lutfen kullanicimiza ulasirsan bizimle iletisime gecmesini soyler misin?"+
+                        "\n Saglikli huzurlu gunler dileriz.");
+            }
+
+        }
+
 
     }
 
-    private void sendMail(String setTo,String setSubject,String setText) throws MessagingException {
+    private  void sendMail(String setTo,String setSubject,String setText) throws MessagingException {
         System.out.println("Sending Email...");
         AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
         ctx.register(AppConfig.class);
@@ -191,39 +227,18 @@ public class ScheuledTasks {
 
         }
 
-    void sendEmail() {
 
-        SimpleMailMessage msg = new SimpleMailMessage();
-        msg.setTo("i.beratyavas@gmail.com");
-
-        msg.setSubject("Testing from Spring Boot");
-        msg.setText("Hello World \n Spring Boot Email");
-
-        javaMailSender.send(msg);
-
+    private static void mailVerileriniOlustur() {
+        System.out.println("Mail Verileri Olusturuluyor");
+        AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+        ctx.register(AppConfig.class);
+        ctx.refresh();
+        mailSender = ctx.getBean(JavaMailSenderImpl.class);
+        mimeMessage = mailSender.createMimeMessage();
     }
 
-    void sendEmailWithAttachment() throws MessagingException, IOException {
 
-        MimeMessage msg = javaMailSender.createMimeMessage();
 
-        // true = multipart message
-        MimeMessageHelper helper = new MimeMessageHelper(msg, true);
-        helper.setTo("1@gmail.com");
-
-        helper.setSubject("Testing from Spring Boot");
-
-        // default = text/plain
-        //helper.setText("Check attachment for image!");
-
-        // true = text/html
-        helper.setText("<h1>Check attachment for image!</h1>", true);
-
-        helper.addAttachment("my_photo.png", new ClassPathResource("android.png"));
-
-        javaMailSender.send(msg);
-
-    }
 }
 
 

@@ -99,7 +99,7 @@ public class Trying {
                 String email=emerge.getEmail();
                 String isim=emerge.getFirstName();
                 System.out.println(isim+" Adli Emergency Contacta "+email+" Adresine Mail Gonderildi ");
-                sendMail(email,header,mesaj);
+                sendMail(email,header,"Selam"+isim+"\n"+mesaj+"\n"+" Umarim Hersey Yolundandir.");
             }
 
         }
