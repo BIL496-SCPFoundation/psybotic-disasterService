@@ -14,17 +14,17 @@ import com.scpfoundation.psybotic.disastercheckservice.Models.Notification;
 import com.scpfoundation.psybotic.disastercheckservice.Models.User;
 import com.scpfoundation.psybotic.disastercheckservice.Twitter.TwitterAPIController;
 import com.scpfoundation.psybotic.disastercheckservice.fcm.FCMService;
-import com.scpfoundation.psybotic.disastercheckservice.fcm.PushNotificationController;
+
 import com.scpfoundation.psybotic.disastercheckservice.fcm.model.PushNotificationRequest;
 import com.scpfoundation.psybotic.disastercheckservice.fcm.service.PushNotificationService;
 import net.minidev.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.*;
-import org.springframework.mail.javamail.JavaMailSender;
+
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -41,6 +41,8 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.io.IOException;
 
+
+//to do update Methods
 
 @Component
 public class ScheuledTasks {
@@ -179,19 +181,19 @@ public class ScheuledTasks {
                 String findingnearbyuserurl=findNearByuserurl+city+latitude+longitude;
                 System.out.println(findingnearbyuserurl);
                 System.out.println("Olusturtuldum");
-                ResponseEntity<Object[]> responseEntity = rest.getForEntity(findingnearbyuserurl, Object[].class);
-                Object[] objects = responseEntity.getBody();
+                ResponseEntity<User[]> responseEntity = rest.getForEntity(findingnearbyuserurl, User[].class);
+                User[] userList = responseEntity.getBody();
                 MediaType contentType = responseEntity.getHeaders().getContentType();
                 HttpStatus statusCode = responseEntity.getStatusCode();
 
-                for (int j = 0; j < objects.length ; j++) {
-                    User users=(User)objects[j];
+                for (int j = 0; j < userList.length ; j++) {
+                    User users=userList[j];
                     newNotification.setUserId(users.getId());
-                    String text="Merhaba"+users.getFirstName()
+                    String text="Merhaba"+users.getFirstName()+"\n"
                             +"Seni Cok Merak Ettik"+"Yasadigin Bolgedeye yakin"
-                            +twits_of_disaster.get(i).getLocation()+"'da"+twits_of_disaster.get(i).getType()+"yasandi."
-                            +"Umarim sen sevdiklerin ve ailen iyidir."+
-                            "Lutfen beni bilgilendirir misin,Nasilsin?";
+                            +twits_of_disaster.get(i).getLocation()+" 'da \n"+twits_of_disaster.get(i).getType()+"yasandi. \n"
+                            +"Umarim sen sevdiklerin ve ailen iyidir. \n"+
+                            "Lutfen beni bilgilendirir misin,Nasilsin?" ;
                     newNotification.setText(text);
                     JSONObject notificationJsonObject = new JSONObject();
                     notificationJsonObject.put("notificationId",newNotification.getNotificationId());
