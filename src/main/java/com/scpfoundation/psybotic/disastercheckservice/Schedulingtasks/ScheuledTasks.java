@@ -229,7 +229,7 @@ public class ScheuledTasks {
                     notificationJsonObject.put("sendingDate",sendingDate);
                     notificationJsonObject.put("bildiri",false);
                     HttpEntity<String> request_notification =
-                            new HttpEntity<String>(disasterJsonObject.toString(), headers);
+                            new HttpEntity<String>(notificationJsonObject.toString(), headers);
                     String notificationResultAsJsonStr =
                             rest.postForObject(pushingNotificationDb, request_notification, String.class);
                     JsonNode root_notificaiton = objectMapper.readTree(notificationResultAsJsonStr);
