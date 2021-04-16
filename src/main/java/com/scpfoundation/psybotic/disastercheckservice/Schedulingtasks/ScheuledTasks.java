@@ -32,9 +32,6 @@ import org.springframework.web.client.RestTemplate;
 import twitter4j.TwitterException;
 
 
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 
 import javax.mail.MessagingException;
@@ -67,6 +64,7 @@ public class ScheuledTasks {
     private void controlReplyTime() throws MessagingException {
         String getNoReplyedNotification="https://limitless-lake-96203.herokuapp.com/notifications/findByNotificationNoReply?bildiri=false&reply=false";
         String getEmergencyContactThisUser="https://limitless-lake-96203.herokuapp.com/emergencyContacts/findBySuperId?super_id=";
+        String pushingNotificationDb= "https://limitless-lake-96203.herokuapp.com/notifications/update";
         RestTemplate rest = new RestTemplate();
         ResponseEntity<Notification[]> responseEntity = rest.getForEntity(getNoReplyedNotification, Notification[].class);
         Notification[] notifications = responseEntity.getBody();
@@ -76,10 +74,13 @@ public class ScheuledTasks {
         ArrayList<Notification> ntf=new ArrayList<>();
         for (int i = 0; i <notifications.length ; i++) {
             //Time control
-            Long notifitcationdatetime=notifications[i].getSendingDate().getTime()-10800000;
-            if((currentDateTime-notifitcationdatetime)>TIMEISANOTIFICAITON)
-                ntf.add(notifications[i]);
+            if(notifications[i].getSendingDate()!=null) {
+                Long notifitcationdatetime=notifications[i].getSendingDate().getTime()-10800000;
+                if ((currentDateTime - notifitcationdatetime) > TIMEISANOTIFICAITON)
+                    ntf.add(notifications[i]);
+            }
         }
+        System.out.println(ntf.size());
         for (int i=0;i<ntf.size();i++)
         {
             Notification a1=ntf.get(i);
@@ -101,7 +102,29 @@ public class ScheuledTasks {
                         "Seklinde Mesaj Yolladik 12 Saatten fazla bir sure gectigi icin seni bilgilendirmek istedik. \n"
                         +"Umariz Hersey Yolundandir.\n"+"Lutfen kullanicimiza ulasirsan bizimle iletisime gecmesini soyler misin?"+
                         "\n Saglikli huzurlu gunler dileriz.");
+
+
             }
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            JSONObject notificationJsonObject = new JSONObject();
+            notificationJsonObject.put("id",a1.getId());
+            notificationJsonObject.put("userId",a1.getUserId());
+            notificationJsonObject.put("textHeader",a1.getTextHeader());
+            notificationJsonObject.put("text",a1.getText());
+            notificationJsonObject.put("status",a1.isStatus());
+            notificationJsonObject.put("reply",a1.isReply());
+            Date sendingDate=new Date(a1.getSendingDate().getTime());
+            SimpleDateFormat formatter;
+            formatter = new SimpleDateFormat("E, dd MMM yyyy HH:mm:ss z");
+            System.out.println("Bak ben BUNU bekliyorum" +formatter.format(date));
+            notificationJsonObject.put("sendingDate",formatter.format(date));
+            notificationJsonObject.put("bildiri",true);
+            System.out.println(notificationJsonObject);
+            HttpEntity<String> request_notification =
+                    new HttpEntity<String>(notificationJsonObject.toString(), headers);
+            String notificationResultAsJsonStr =
+                    rest.postForObject(pushingNotificationDb, request_notification, String.class);
 
         }
 
@@ -170,7 +193,7 @@ public class ScheuledTasks {
                 System.out.println("Yeni bir felaket eklendi");
                 Notification newNotification = new Notification();
                 Date date = new Date(System.currentTimeMillis());
-                newNotification.setNotificationId(twits_of_disaster.get(i).getId());
+                newNotification.setId(twits_of_disaster.get(i).getId());
                 newNotification.setSendingDate(date);
                 newNotification.setReply(false);
                 newNotification.setStatus(true);
@@ -196,13 +219,15 @@ public class ScheuledTasks {
                             "Lutfen beni bilgilendirir misin,Nasilsin?" ;
                     newNotification.setText(text);
                     JSONObject notificationJsonObject = new JSONObject();
-                    notificationJsonObject.put("notificationId",newNotification.getNotificationId());
+                    notificationJsonObject.put("id",newNotification.getId());
                     notificationJsonObject.put("userId",newNotification.getUserId());
                     notificationJsonObject.put("textHeader",newNotification.getTextHeader());
                     notificationJsonObject.put("text",newNotification.getText());
                     notificationJsonObject.put("status",newNotification.isStatus());
                     notificationJsonObject.put("reply",newNotification.isReply());
-                    notificationJsonObject.put("sendingDate",newNotification.getSendingDate());
+                    Date sendingDate=new Date(newNotification.getSendingDate().getTime());
+                    notificationJsonObject.put("sendingDate",sendingDate);
+                    notificationJsonObject.put("bildiri",false);
                     HttpEntity<String> request_notification =
                             new HttpEntity<String>(disasterJsonObject.toString(), headers);
                     String notificationResultAsJsonStr =

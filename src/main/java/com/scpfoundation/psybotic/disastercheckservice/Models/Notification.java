@@ -4,7 +4,7 @@ import java.util.Date;
 import java.util.Objects;
 
 public class Notification {
-    private String notificationId;
+    private String id;
     private String userId;
     private String textHeader;
     private String text;
@@ -12,11 +12,12 @@ public class Notification {
     private boolean reply;
     private Date sendingDate;
     private Date replyDate;
+    private boolean bildiri;
 
     @Override
     public String toString() {
         return "Notification{" +
-                "notificationId='" + notificationId + '\'' +
+                "notificationId='" + id + '\'' +
                 ", userId='" + userId + '\'' +
                 ", textHeader='" + textHeader + '\'' +
                 ", text='" + text + '\'' +
@@ -24,16 +25,16 @@ public class Notification {
                 ", reply=" + reply +
                 ", sendingDate=" + sendingDate +
                 ", replyDate=" + replyDate +
+                ", bildiri=" + bildiri +
                 '}';
     }
 
-
-    public String getNotificationId() {
-        return notificationId;
+    public String getId() {
+        return id;
     }
 
-    public void setNotificationId(String notificationId) {
-        this.notificationId = notificationId;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getUserId() {
@@ -62,6 +63,14 @@ public class Notification {
 
     public boolean isStatus() {
         return status;
+    }
+
+    public boolean isBildiri() {
+        return bildiri;
+    }
+
+    public void setBildiri(boolean bildiri) {
+        this.bildiri = bildiri;
     }
 
     public void setStatus(boolean status) {
@@ -96,12 +105,12 @@ public class Notification {
         if (this == o) return true;
         if (!(o instanceof Notification)) return false;
         Notification that = (Notification) o;
-        return isStatus() == that.isStatus() && isReply() == that.isReply() && Objects.equals(getNotificationId(), that.getNotificationId()) && Objects.equals(getUserId(), that.getUserId()) && Objects.equals(getTextHeader(), that.getTextHeader()) && Objects.equals(getText(), that.getText()) && Objects.equals(getSendingDate(), that.getSendingDate()) && Objects.equals(getReplyDate(), that.getReplyDate());
+        return isStatus() == that.isStatus() && isReply() == that.isReply() && Objects.equals(getId(), that.getId()) && Objects.equals(getUserId(), that.getUserId()) && Objects.equals(getTextHeader(), that.getTextHeader()) && Objects.equals(getText(), that.getText()) && Objects.equals(getSendingDate(), that.getSendingDate()) && Objects.equals(getReplyDate(), that.getReplyDate());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getNotificationId(), getUserId(), getTextHeader(), getText(), isStatus(), isReply(), getSendingDate(), getReplyDate());
+        return Objects.hash(getId(), getUserId(), getTextHeader(), getText(), isStatus(), isReply(), getSendingDate(), getReplyDate());
     }
 
 }
